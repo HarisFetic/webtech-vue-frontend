@@ -1,4 +1,4 @@
-# forntend
+# frontend
 
 ## Project setup
 ```
