@@ -28,5 +28,20 @@
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
     "jest": "^27.0.5"
-  }
+  },
+  "description": "## Project setup ``` npm install ```",
+  "main": ".eslintrc.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarisFetic/webtech-vue-frontend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HarisFetic/webtech-vue-frontend/issues"
+  },
+  "homepage": "https://github.com/HarisFetic/webtech-vue-frontend#readme"
 }

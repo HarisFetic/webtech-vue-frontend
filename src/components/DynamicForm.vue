@@ -1,27 +1,28 @@
 <template>
-    <h3> Test </h3>
-    <div>
-      <input v-model="nameField" placeholder="Name" type="text" ref="nameInput">
-      <input v-model="repeatField" placeholder="Repeat" @keyup.enter="save()">
-      <button type="button" @click="save()">Save</button>
-    </div>
-    <div>
-      <table>
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Repeat</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>{{ nameField }}</td>
-          <td>{{ repeatField }}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </template>
+  <h3> Test </h3>
+  <div>
+    <input v-model="nameField" placeholder="Name" type="text" ref="nameInput">
+    <input v-model="repeatField" placeholder="Repeat" @keyup.enter="save()">
+    <button type="button" @click="save()">Save</button>
+  </div>
+  <div>
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Repeat</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="kraftuebung in kraftuebungen" :key="kraftuebung.id">
+        <td>{{ kraftuebung.name }}</td>
+        <td>{{ kraftuebung.repeat }}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
   
   <script>
   export default {
@@ -35,23 +36,24 @@
       }
     },
     methods: {
-      loadKraftuebungen () {
-
-        const endpoint = 'http://localhost:8080/kraftuebungen'
-        const requestOptions = {
-          method: 'GET',
-          redirect: 'follow'
-          // headers: {
-          //   Authorization: 'Bearer ' + this.accessToken
-          // }
-        }
-        fetch(endpoint, requestOptions)
-          .then(response => response.json())
-          .then(result => result.forEach(kraftuebung => {
-            this.kraftuebungen.push(kraftuebung)
-          }))
-          .catch(error => console.log('error', error))
-      },
+      loadKraftuebungen() {
+  const endpoint = 'http://localhost:8080/kraftuebungen';
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  fetch(endpoint, requestOptions)
+    .then(response => response.json())
+    .then(result => {
+      console.log(result); // Überprüfe, ob die Daten richtig empfangen werden
+      result.forEach(kraftuebung => {
+        this.kraftuebungen.push(kraftuebung);
+        this.nameField = kraftuebung.name; // Setze den Wert von nameField
+        this.repeatField = kraftuebung.repeat; // Setze den Wert von repeatField
+      });
+    })
+    .catch(error => console.log('error', error));
+},
       save () {
         const endpoint = 'http://localhost:8080/kraftuebungen'
         const data = {
