@@ -1,8 +1,13 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
+  <div id="app">
+    <nav class="navbar">
+      <img src="./assets/logo.jpg" class="logo">
+      <router-link to="/" class="nav-link">Home</router-link>
+      <router-link to="/about" class="nav-link">About</router-link>
+      <router-link to="/Kraftuebungen" class="nav-link">Kraftuebungen</router-link>
+      <router-link to="/Ausdaueruebungen" class="nav-link">Ausdaueruebungen</router-link>
+    </nav>
+  </div>
   <router-view/>
 </template>
 
@@ -15,16 +20,27 @@
   color: #2c3e50;
 }
 
-nav {
-  padding: 30px;
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background-color: #283593; /* Dunkles Blau */
+  color: #ffffff; /* Weiße Schrift */
 }
 
-nav a {
+.navbar img.logo {
+  width: 50px;
+  margin-right: 10px;
+}
+
+.navbar .nav-link {
   font-weight: bold;
-  color: #2c3e50;
+  color: #ffffff; /* Weiße Schrift */
+  text-decoration: none;
+  margin-right: 10px;
 }
 
-nav a.router-link-exact-active {
-  color: #42b983;
+.navbar .nav-link.router-link-exact-active {
+  color: #ffffff; /* Weiße Schrift */
 }
 </style>

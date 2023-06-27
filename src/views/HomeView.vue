@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
+  <h1>Mithilfe dieser App können Sie ganz einfach ihre Fitness auswählen und tracken.</h1>
     <DynamicForm msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
