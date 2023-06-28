@@ -3,8 +3,11 @@
     <h1 class="title">Fitnesstracker</h1>
     <div class="form-container">
       <input v-model="nameField" placeholder="Name" type="text" ref="nameInput" class="input-field">
+      <div v-if="nameError" class="validation-message">{{ nameError }}</div>
       <input v-model="repeatField" placeholder="Repeat" @keyup.enter="save()" class="input-field">
+      <div v-if="repeatError" class="validation-message">{{ repeatError }}</div>
       <input v-model="weightField" placeholder="Weight" @keyup.enter="save()" class="input-field">
+      <div v-if="weightError" class="validation-message">{{ weightError }}</div>
       <button type="button" @click="save()" class="save-button">Save</button>
     </div>
     <div class="table-container">
@@ -36,7 +39,7 @@
     </div>
     <div class="stopwatch-container">
       <h3>Stoppuhr</h3>
-      <p>{{ running ? stopwatchTime : formattedTime }}</p> <!-- Aktualisierte Zeile -->
+      <p>{{ running ? stopwatchTime : formattedTime }}</p>
       <div class="stopwatch">
         <button @click="toggleStopwatch">{{ running ? 'Stop' : 'Start' }}</button>
         <button @click="resetStopwatch">Reset</button>
@@ -59,7 +62,10 @@ export default {
       running: false,
       stopwatchTime: '00:00:00',
       stopwatchInterval: null,
-      startTime: 0
+      startTime: 0,
+      nameError: '',
+      repeatError: '',
+      weightError: ''
     }
   },
   methods: {
@@ -72,8 +78,8 @@ export default {
       fetch(endpoint, requestOptions)
         .then(response => response.json())
         .then(result => {
-          console.log(result); // Überprüfe, ob die Daten richtig empfangen werden
-          this.kraftuebungen = result; // Setze die Liste der kraftuebungen neu
+          console.log(result);
+          this.kraftuebungen = result;
         })
         .catch(error => console.log('error', error));
     },
@@ -87,7 +93,7 @@ export default {
         .then(response => {
           if (response.ok) {
             console.log('Kraftuebung deleted successfully');
-            this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Löschen neu
+            this.loadKraftuebungen();
           } else {
             throw new Error('Failed to delete Kraftuebung');
           }
@@ -95,10 +101,14 @@ export default {
         .catch(error => console.log('Error:', error));
     },
     save() {
-      if (this.editingKraftuebung) {
-        this.updateKraftuebung();
-      } else {
-        this.createKraftuebung();
+      this.clearValidationErrors();
+
+      if (this.validateForm()) {
+        if (this.editingKraftuebung) {
+          this.updateKraftuebung();
+        } else {
+          this.createKraftuebung();
+        }
       }
     },
     createKraftuebung() {
@@ -121,7 +131,7 @@ export default {
         .then(data => {
           console.log('Success:', data);
           this.clearFormFields();
-          this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Speichern neu
+          this.loadKraftuebungen();
         })
         .catch(error => console.log('error', error));
     },
@@ -147,7 +157,7 @@ export default {
           console.log('Success:', data);
           this.clearFormFields();
           this.editingKraftuebung = null;
-          this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Aktualisieren neu
+          this.loadKraftuebungen();
         })
         .catch(error => console.log('error', error));
     },
@@ -156,10 +166,6 @@ export default {
       this.nameField = kraftuebung.name;
       this.repeatField = kraftuebung.repeat;
       this.weightField = kraftuebung.weight;
-    },
-    confirmKraftuebung(kraftuebung) {
-      kraftuebung.confirmed = true;
-      this.updateKraftuebung();
     },
     clearFormFields() {
       this.nameField = '';
@@ -171,7 +177,38 @@ export default {
         this.claims = await this.$auth.getKraftuebungen();
       }
     },
-    toggleStopwatch() {
+    validateForm() {
+      let isValid = true;
+
+      if (!this.nameField) {
+        this.nameError = 'Name is required.';
+        isValid = false;
+      }
+
+      if (!this.repeatField) {
+        this.repeatError = 'Repeat is required.';
+        isValid = false;
+      } else if (isNaN(this.repeatField)) {
+        this.repeatError = 'Repeat must be a number.';
+        isValid = false;
+      }
+
+      if (!this.weightField) {
+        this.weightError = 'Weight is required.';
+        isValid = false;
+      } else if (isNaN(this.weightField)) {
+        this.weightError = 'Weight must be a number.';
+        isValid = false;
+      }
+
+      return isValid;
+    },
+    clearValidationErrors() {
+      this.nameError = '';
+      this.repeatError = '';
+      this.weightError = '';
+    },
+    async toggleStopwatch() {
       if (this.running) {
         this.stopStopwatch();
       } else {
@@ -210,15 +247,13 @@ export default {
       );
     },
     padNumber(number) {
-      return String(number).padStart(2, '0');
+      return number.toString().padStart(2, '0');
     }
   },
-  async created() {
-    await this.setup();
+  mounted() {
     this.loadKraftuebungen();
-  },
-  mounted() {}
-}
+  }
+};
 </script>
 
 <style scoped>
@@ -226,12 +261,10 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
 }
 
 .title {
-  font-size: 50px;
+  font-size: 30px;
   font-weight: bold;
   margin-bottom: 20px;
 }
@@ -240,54 +273,42 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .input-field {
   margin-bottom: 10px;
+  padding: 5px;
+}
+
+.validation-message {
+  color: red;
+  margin-bottom: 8px;
 }
 
 .save-button {
-  background-color: green;
+  font-size: 15px;
+  margin-top: 10px;
+  width: 50px;
+  padding: 5px;
+  background-color: #4caf50; /* Ändere die Hintergrundfarbe auf Grün */
   color: white;
-  padding: 12px 24px;
-  font-size: 25px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
 }
 
 .table-container {
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .stopwatch-container {
-  margin-top: 20px;
-  font-size: 24px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-}
-
-.stopwatch {
-  display: flex;
   align-items: center;
 }
 
-.confirmed {
-  color: green;
+.stopwatch-button {
+  margin-top: 10px;
+  padding: 5px 10px;
 }
-
-.unconfirmed {
-  color: red;
-}
-
-.input-field {
-  margin-bottom: 10px;
-  width: 300px; /* Ändere die Breite nach Bedarf */
-  height: 40px; /* Ändere die Höhe nach Bedarf */
-  border: 7px solid blue; /* Füge einen blauen Rahmen hinzu */
-  border-radius: 4px;
-  padding: 4px;
-}
-
 </style>
