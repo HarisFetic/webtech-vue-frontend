@@ -14,7 +14,9 @@
             <th>Name</th>
             <th>Repeat</th>
             <th>Weight</th>
+            <th>Edit</th>
             <th>Delete</th>
+            <th>Confirm</th>
           </tr>
         </thead>
         <tbody>
@@ -22,18 +24,22 @@
             <td>{{ kraftuebung.name }}</td>
             <td>{{ kraftuebung.repeat }}</td>
             <td>{{ kraftuebung.weight }}</td>
+            <td><button @click="editKraftuebung(kraftuebung)">Edit</button></td>
             <td><button @click="deleteKraftuebung(kraftuebung.id)">x</button></td>
+            <td>
+              <button v-if="!kraftuebung.confirmed" @click="confirmKraftuebung(kraftuebung)">Confirm</button>
+              <span v-else>Confirmed</span>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="stopwatch-container">
       <h3>Stoppuhr</h3>
+      <p>{{ running ? stopwatchTime : formattedTime }}</p> <!-- Aktualisierte Zeile -->
       <div class="stopwatch">
-        <p v-if="!running">{{ formattedTime }}</p>
-        <p v-else>{{ stopwatchTime }}</p>
         <button @click="toggleStopwatch">{{ running ? 'Stop' : 'Start' }}</button>
-        <button @click="resetStopwatch" :disabled="!running && stopwatchTime === '00:00:00'">Reset</button>
+        <button @click="resetStopwatch">Reset</button>
       </div>
     </div>
   </div>
@@ -49,6 +55,7 @@ export default {
       nameField: '',
       repeatField: '',
       weightField: '',
+      editingKraftuebung: null,
       running: false,
       stopwatchTime: '00:00:00',
       stopwatchInterval: null,
@@ -71,28 +78,36 @@ export default {
         .catch(error => console.log('error', error));
     },
     deleteKraftuebung(id) {
-          const endpoint = `http://localhost:8080/kraftuebungen/${id}`;
-          const requestOptions = {
-            method: 'DELETE',
-            redirect: 'follow'
-          };
-          fetch(endpoint, requestOptions)
-                  .then(response => {
-                    if (response.ok) {
-                      console.log('Kraftuebung deleted successfully');
-                      this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Löschen neu
-                    } else {
-                      throw new Error('Failed to delete Kraftuebung');
-                    }
-                  })
-                  .catch(error => console.log('Error:', error));
-              },
+      const endpoint = `http://localhost:8080/kraftuebungen/${id}`;
+      const requestOptions = {
+        method: 'DELETE',
+        redirect: 'follow'
+      };
+      fetch(endpoint, requestOptions)
+        .then(response => {
+          if (response.ok) {
+            console.log('Kraftuebung deleted successfully');
+            this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Löschen neu
+          } else {
+            throw new Error('Failed to delete Kraftuebung');
+          }
+        })
+        .catch(error => console.log('Error:', error));
+    },
     save() {
+      if (this.editingKraftuebung) {
+        this.updateKraftuebung();
+      } else {
+        this.createKraftuebung();
+      }
+    },
+    createKraftuebung() {
       const endpoint = 'http://localhost:8080/kraftuebungen';
       const data = {
         name: this.nameField,
         repeat: this.repeatField,
         weight: this.weightField,
+        confirmed: false
       };
       const requestOptions = {
         method: 'POST',
@@ -105,12 +120,51 @@ export default {
         .then(response => response.json())
         .then(data => {
           console.log('Success:', data);
-          this.nameField = ''; // Leere das Eingabefeld für den Namen
-          this.repeatField = ''; // Leere das Eingabefeld für die Wiederholungen
-          this.weightField = '';
+          this.clearFormFields();
           this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Speichern neu
         })
         .catch(error => console.log('error', error));
+    },
+    updateKraftuebung() {
+      if (!this.editingKraftuebung) return;
+      const endpoint = `http://localhost:8080/kraftuebungen/${this.editingKraftuebung.id}`;
+      const data = {
+        name: this.nameField,
+        repeat: this.repeatField,
+        weight: this.weightField,
+        confirmed: this.editingKraftuebung.confirmed
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      };
+      fetch(endpoint, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          this.clearFormFields();
+          this.editingKraftuebung = null;
+          this.loadKraftuebungen(); // Lade die kraftuebungen nach dem Aktualisieren neu
+        })
+        .catch(error => console.log('error', error));
+    },
+    editKraftuebung(kraftuebung) {
+      this.editingKraftuebung = kraftuebung;
+      this.nameField = kraftuebung.name;
+      this.repeatField = kraftuebung.repeat;
+      this.weightField = kraftuebung.weight;
+    },
+    confirmKraftuebung(kraftuebung) {
+      kraftuebung.confirmed = true;
+      this.updateKraftuebung();
+    },
+    clearFormFields() {
+      this.nameField = '';
+      this.repeatField = '';
+      this.weightField = '';
     },
     async setup() {
       if (this.$root.authenticated) {
@@ -132,12 +186,14 @@ export default {
       }, 1000);
     },
     stopStopwatch() {
-      this.running = false;
       clearInterval(this.stopwatchInterval);
+      this.stopwatchInterval = null;
     },
     resetStopwatch() {
       this.stopStopwatch();
       this.stopwatchTime = '00:00:00';
+      this.running = false;
+      this.startTime = 0;
     },
     formatTime() {
       const milliseconds = Date.now() - this.startTime;
@@ -175,7 +231,7 @@ export default {
 }
 
 .title {
-  font-size: 28px;
+  font-size: 50px;
   font-weight: bold;
   margin-bottom: 20px;
 }
@@ -191,9 +247,10 @@ export default {
 }
 
 .save-button {
-  background-color: blue;
+  background-color: green;
   color: white;
-  padding: 8px 16px;
+  padding: 12px 24px;
+  font-size: 25px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -205,6 +262,7 @@ export default {
 
 .stopwatch-container {
   margin-top: 20px;
+  font-size: 24px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -213,6 +271,23 @@ export default {
 .stopwatch {
   display: flex;
   align-items: center;
+}
+
+.confirmed {
+  color: green;
+}
+
+.unconfirmed {
+  color: red;
+}
+
+.input-field {
+  margin-bottom: 10px;
+  width: 300px; /* Ändere die Breite nach Bedarf */
+  height: 40px; /* Ändere die Höhe nach Bedarf */
+  border: 7px solid blue; /* Füge einen blauen Rahmen hinzu */
+  border-radius: 4px;
+  padding: 4px;
 }
 
 </style>
