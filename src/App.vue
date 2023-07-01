@@ -6,6 +6,7 @@
       <router-link to="/about" class="nav-link">About</router-link>
       <router-link to="/Kraftuebungen" class="nav-link">Kraftuebungen</router-link>
       <router-link to="/Ausdaueruebungen" class="nav-link">Ausdaueruebungen</router-link>
+      <router-link to="/Done" class="nav-link">Done</router-link>
     </nav>
   </div>
   <router-view/>

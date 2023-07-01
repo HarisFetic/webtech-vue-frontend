@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import KraftuebungenView from '../views/KraftuebungenView.vue'
 import AusdaueruebungenView from '../views/AusdaueruebungenView.vue'
+import DoneView from '../views/DoneView.vue'
 
 const routes = [
   {
@@ -23,16 +24,22 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../components/DynamicForm.vue')
   },
   {
-       path: '/kraftuebungen',
-       name: 'kraftuebungen',
-       component: KraftuebungenView
-     },
+    path: '/kraftuebungen',
+    name: 'kraftuebungen',
+    component: KraftuebungenView
+  },
 
-     {
-            path: '/ausdaueruebungen',
-            name: 'ausdaueruebungen',
-            component: AusdaueruebungenView
-          }
+  {
+    path: '/ausdaueruebungen',
+    name: 'ausdaueruebungen',
+    component: AusdaueruebungenView
+  },
+
+  {
+    path: '/done',
+    name: 'done',
+    component: DoneView
+  }
 ]
 
 const router = createRouter({

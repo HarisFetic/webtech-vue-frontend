@@ -11,6 +11,7 @@
       <button type="button" @click="save()" class="save-button">Save</button>
     </div>
     <div class="table-container">
+      <h2>Kraftübungen</h2>
       <table>
         <thead>
           <tr>
@@ -29,10 +30,26 @@
             <td>{{ kraftuebung.weight }}</td>
             <td><button @click="editKraftuebung(kraftuebung)">Edit</button></td>
             <td><button @click="deleteKraftuebung(kraftuebung.id)">x</button></td>
-            <td>
-              <button v-if="!kraftuebung.confirmed" @click="confirmKraftuebung(kraftuebung)">Confirm</button>
-              <span v-else>Confirmed</span>
-            </td>
+            <td><button @click="confirmKraftuebung(kraftuebung)">Confirm</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-container">
+      <h2>Erledigte Kraftübungen</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Repeat</th>
+            <th>Weight</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="kraftuebung in bestaetigteKraftuebungen" :key="kraftuebung.id">
+            <td>{{ kraftuebung.name }}</td>
+            <td>{{ kraftuebung.repeat }}</td>
+            <td>{{ kraftuebung.weight }}</td>
           </tr>
         </tbody>
       </table>
@@ -49,12 +66,16 @@
 </template>
 
 <script>
+
+import '../styles.css'; // Import der CSS-Datei
+
 export default {
   name: 'DynamicForm',
   props: ['title'],
   data() {
     return {
       kraftuebungen: [],
+      bestaetigteKraftuebungen: [],
       nameField: '',
       repeatField: '',
       weightField: '',
@@ -167,6 +188,31 @@ export default {
       this.repeatField = kraftuebung.repeat;
       this.weightField = kraftuebung.weight;
     },
+    confirmKraftuebung(kraftuebung) {
+      const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
+      const data = {
+        name: kraftuebung.name,
+        repeat: kraftuebung.repeat,
+        weight: kraftuebung.weight,
+        confirmed: true
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      };
+      fetch(endpoint, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          this.bestaetigteKraftuebungen.push(data); // Hinzufügen zur Liste der bestätigten Kraftübungen
+          this.loadKraftuebungen(); // Aktualisieren der Liste der Kraftübungen
+        })
+        .catch(error => console.log('error', error));
+    },
+
     clearFormFields() {
       this.nameField = '';
       this.repeatField = '';
@@ -256,59 +302,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.centered-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.title {
-  font-size: 30px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.input-field {
-  margin-bottom: 10px;
-  padding: 5px;
-}
-
-.validation-message {
-  color: red;
-  margin-bottom: 8px;
-}
-
-.save-button {
-  font-size: 15px;
-  margin-top: 10px;
-  width: 50px;
-  padding: 5px;
-  background-color: #4caf50; /* Ändere die Hintergrundfarbe auf Grün */
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.table-container {
-  margin-bottom: 20px;
-}
-
-.stopwatch-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stopwatch-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-}
-</style>
+<style scoped></style>
