@@ -2,25 +2,34 @@
   <div class="centered-container">
     <h1 class="title">Fitnesstracker</h1>
     <div class="form-container">
-      <input v-model="nameField" placeholder="Name" type="text" ref="nameInput" class="input-field">
-      <div v-if="nameError" class="validation-message">{{ nameError }}</div>
-      <input v-model="repeatField" placeholder="Repeat" @keyup.enter="save()" class="input-field">
-      <div v-if="repeatError" class="validation-message">{{ repeatError }}</div>
-      <input v-model="weightField" placeholder="Weight" @keyup.enter="save()" class="input-field">
-      <div v-if="weightError" class="validation-message">{{ weightError }}</div>
-      <button type="button" @click="save()" class="save-button">Save</button>
+      <label for="exercise-type">Übung:</label>
+      <select id="exercise-type" v-model="exerciseType" @change="clearFormFields">
+        <option value="kraftuebung">Kraftuebung</option>
+        <option value="ausdaueruebung">Ausdaueruebung</option>
+      </select>
+      <label for="name">Name:</label>
+      <input type="text" id="name" v-model="nameField" />
+      <span class="error-message">{{ nameError }}</span>
+      <label v-if="exerciseType === 'kraftuebung'" for="repeat">Repeat:</label>
+      <input v-if="exerciseType === 'kraftuebung'" type="text" id="repeat" v-model="repeatField" />
+      <span  v-if="exerciseType === 'kraftuebung'" class="error-message">{{ repeatError }}</span>
+      <label v-if="exerciseType === 'kraftuebung'" for="weight">Weight:</label>
+      <input v-if="exerciseType === 'kraftuebung'" type="text" id="weight" v-model="weightField" />
+      <span  v-if="exerciseType === 'kraftuebung'" class="error-message">{{ weightError }}</span>
+      <label v-if="exerciseType === 'ausdaueruebung'" for="time">Time:</label>
+      <input v-if="exerciseType === 'ausdaueruebung'" type="text" id="time" v-model="timeField" />
+      <span  v-if="exerciseType === 'ausdaueruebung'" class="error-message">{{ timeError }}</span>
+      <button @click="save">Save</button>
     </div>
-    <div class="table-container">
-      <h2>Kraftübungen</h2>
+    <div>
+      <h2>Kraftuebungen:</h2>
       <table>
         <thead>
           <tr>
             <th>Name</th>
             <th>Repeat</th>
             <th>Weight</th>
-            <th>Edit</th>
-            <th>Delete</th>
-            <th>Confirm</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -28,36 +37,42 @@
             <td>{{ kraftuebung.name }}</td>
             <td>{{ kraftuebung.repeat }}</td>
             <td>{{ kraftuebung.weight }}</td>
-            <td><button @click="editKraftuebung(kraftuebung)">Edit</button></td>
-            <td><button @click="deleteKraftuebung(kraftuebung.id)">x</button></td>
-            <td><button @click="confirmKraftuebung(kraftuebung)">Confirm</button></td>
+            <td>
+              <button @click="editKraftuebung(kraftuebung)">Edit</button>
+              <button @click="deleteKraftuebung(kraftuebung.id)">Delete</button>
+              <button v-if="!kraftuebung.confirmed" @click="confirmKraftuebung(kraftuebung)">Confirm</button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div class="table-container">
-      <h2>Erledigte Kraftübungen</h2>
+    <div>
+      <h2>Ausdaueruebungen:</h2>
       <table>
         <thead>
           <tr>
             <th>Name</th>
-            <th>Repeat</th>
-            <th>Weight</th>
+            <th>Time</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="kraftuebung in bestaetigteKraftuebungen" :key="kraftuebung.id">
-            <td>{{ kraftuebung.name }}</td>
-            <td>{{ kraftuebung.repeat }}</td>
-            <td>{{ kraftuebung.weight }}</td>
+          <tr v-for="ausdaueruebung in ausdaueruebungen" :key="ausdaueruebung.id">
+            <td>{{ ausdaueruebung.name }}</td>
+            <td>{{ ausdaueruebung.time }}</td>
+            <td>
+              <button @click="editAusdaueruebung(ausdaueruebung)">Edit</button>
+              <button @click="deleteAusdaueruebung(ausdaueruebung.id)">Delete</button>
+              <button v-if="!ausdaueruebung.confirmed" @click="confirmAusdaueruebung(ausdaueruebung)">Confirm</button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div class="stopwatch-container">
-      <h3>Stoppuhr</h3>
-      <p>{{ running ? stopwatchTime : formattedTime }}</p>
+    <div>
+      <h2>Stopwatch:</h2>
       <div class="stopwatch">
+        <div class="stopwatch-time">{{ formatTime(stopwatchTime) }}</div>
         <button @click="toggleStopwatch">{{ running ? 'Stop' : 'Start' }}</button>
         <button @click="resetStopwatch">Reset</button>
       </div>
@@ -74,44 +89,61 @@ export default {
   props: ['title'],
   data() {
     return {
-      kraftuebungen: [],
-      bestaetigteKraftuebungen: [],
+      exerciseType: 'kraftuebung',
       nameField: '',
       repeatField: '',
       weightField: '',
+      timeField: '',
+      kraftuebungen: [],
+      ausdaueruebungen: [],
       editingKraftuebung: null,
-      running: false,
-      stopwatchTime: '00:00:00',
+      stopwatchTime: 0,
       stopwatchInterval: null,
+      running: false,
       startTime: 0,
       nameError: '',
       repeatError: '',
-      weightError: ''
-    }
+      weightError: '',
+      timeError: '',
+    };
   },
   methods: {
     loadKraftuebungen() {
       const endpoint = 'http://localhost:8080/kraftuebungen';
       const requestOptions = {
         method: 'GET',
-        redirect: 'follow'
+        redirect: 'follow',
       };
       fetch(endpoint, requestOptions)
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           console.log(result);
           this.kraftuebungen = result;
         })
-        .catch(error => console.log('error', error));
+        .catch((error) => console.log('error', error));
+    },
+    loadAusdaueruebungen() {
+      const endpoint = 'http://localhost:8080/ausdaueruebungen';
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow',
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          this.ausdaueruebungen = result;
+        })
+        .catch((error) => console.log('error', error));
     },
     deleteKraftuebung(id) {
       const endpoint = `http://localhost:8080/kraftuebungen/${id}`;
       const requestOptions = {
         method: 'DELETE',
-        redirect: 'follow'
+        redirect: 'follow',
       };
       fetch(endpoint, requestOptions)
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             console.log('Kraftuebung deleted successfully');
             this.loadKraftuebungen();
@@ -119,42 +151,102 @@ export default {
             throw new Error('Failed to delete Kraftuebung');
           }
         })
-        .catch(error => console.log('Error:', error));
+        .catch((error) => console.log('Error:', error));
     },
-    save() {
-      this.clearValidationErrors();
+    deleteAusdaueruebung(id) {
+      const endpoint = `http://localhost:8080/ausdaueruebungen/${id}`;
+      const requestOptions = {
+        method: 'DELETE',
+        redirect: 'follow',
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => {
+          if (response.ok) {
+            console.log('Ausdaueruebung deleted successfully');
+            this.loadAusdaueruebungen();
+          } else {
+            throw new Error('Failed to delete Ausdaueruebung');
+          }
+        })
+        .catch((error) => console.log('Error:', error));
+    },
+    saveAusdaueruebung() {
 
-      if (this.validateForm()) {
-        if (this.editingKraftuebung) {
-          this.updateKraftuebung();
-        } else {
-          this.createKraftuebung();
-        }
+  this.clearValidationErrors();
+
+  if (this.validateForm()) {
+    if (this.editingAusdaueruebung) {
+      this.updateAusdaueruebung();
+    } else {
+      this.createAusdaueruebung();
+    }
+  }
+},
+save() {
+  this.clearValidationErrors();
+
+  if (this.validateForm()) {
+    if (this.exerciseType === 'kraftuebung') {
+      if (this.editingKraftuebung) {
+        this.updateKraftuebung();
+      } else {
+        this.createKraftuebung();
       }
-    },
+    } else if (this.exerciseType === 'ausdaueruebung') {
+      if (this.editingAusdaueruebung) {
+        this.updateAusdaueruebung();
+      } else {
+        this.createAusdaueruebung();
+      }
+    }
+  }
+},
     createKraftuebung() {
       const endpoint = 'http://localhost:8080/kraftuebungen';
       const data = {
         name: this.nameField,
         repeat: this.repeatField,
         weight: this.weightField,
-        confirmed: false
+        confirmed: false,
       };
       const requestOptions = {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       };
       fetch(endpoint, requestOptions)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           console.log('Success:', data);
           this.clearFormFields();
           this.loadKraftuebungen();
         })
-        .catch(error => console.log('error', error));
+        .catch((error) => console.log('error', error));
+    },
+    createAusdaueruebung() {
+      const endpoint = 'http://localhost:8080/ausdaueruebungen';
+      const data = {
+        name: this.nameField,
+        time: this.timeField,
+        confirmed: false,
+      };
+      const requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          this.clearFormFields();
+          this.loadAusdaueruebungen();
+        })
+        .catch((error) => console.log('error', error));
     },
     updateKraftuebung() {
       if (!this.editingKraftuebung) return;
@@ -163,24 +255,49 @@ export default {
         name: this.nameField,
         repeat: this.repeatField,
         weight: this.weightField,
-        confirmed: this.editingKraftuebung.confirmed
+        confirmed: this.editingKraftuebung.confirmed,
       };
       const requestOptions = {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       };
       fetch(endpoint, requestOptions)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           console.log('Success:', data);
           this.clearFormFields();
           this.editingKraftuebung = null;
           this.loadKraftuebungen();
         })
-        .catch(error => console.log('error', error));
+        .catch((error) => console.log('error', error));
+    },
+    updateAusdaueruebung() {
+      if (!this.editingAusdaueruebung) return;
+      const endpoint = `http://localhost:8080/ausdaueruebungen/${this.editingAusdaueruebung.id}`;
+      const data = {
+        name: this.nameField,
+        time: this.timeField,
+        confirmed: this.editingAusdaueruebung.confirmed,
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          this.clearFormFields();
+          this.editingAusdaueruebung = null;
+          this.loadAusdaueruebungen();
+        })
+        .catch((error) => console.log('error', error));
     },
     editKraftuebung(kraftuebung) {
       this.editingKraftuebung = kraftuebung;
@@ -188,35 +305,65 @@ export default {
       this.repeatField = kraftuebung.repeat;
       this.weightField = kraftuebung.weight;
     },
+    editAusdaueruebung(ausdaueruebung) {
+      this.editingAusdaueruebung = ausdaueruebung;
+      this.nameField = ausdaueruebung.name;
+      this.timeField = ausdaueruebung.time;
+    },
     confirmKraftuebung(kraftuebung) {
       const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
       const data = {
         name: kraftuebung.name,
         repeat: kraftuebung.repeat,
         weight: kraftuebung.weight,
-        confirmed: true
+        confirmed: true,
       };
       const requestOptions = {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       };
       fetch(endpoint, requestOptions)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           console.log('Success:', data);
           this.bestaetigteKraftuebungen.push(data); // Hinzufügen zur Liste der bestätigten Kraftübungen
           this.loadKraftuebungen(); // Aktualisieren der Liste der Kraftübungen
         })
-        .catch(error => console.log('error', error));
+        .catch((error) => console.log('error', error));
     },
-
+    confirmAusdaueruebung(ausdaueruebung) {
+      const endpoint = `http://localhost:8080/ausdaueruebungen/${ausdaueruebung.id}`;
+      const data = {
+        name: ausdaueruebung.name,
+        time: ausdaueruebung.time,
+        confirmed: true,
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          this.bestaetigteAusdaueruebungen.push(data); // Hinzufügen zur Liste der bestätigten Ausdauerübungen
+          this.loadAusdaueruebungen(); // Aktualisieren der Liste der Ausdauerübungen
+        })
+        .catch((error) => console.log('error', error));
+    },
     clearFormFields() {
+      //Die erste Methode um Fehler nicht auf Kraftuebungen zu übertragen und andersrum
+      this.clearValidationErrors()
       this.nameField = '';
       this.repeatField = '';
       this.weightField = '';
+      this.timeField = '';
     },
     async setup() {
       if (this.$root.authenticated) {
@@ -231,20 +378,30 @@ export default {
         isValid = false;
       }
 
-      if (!this.repeatField) {
-        this.repeatError = 'Repeat is required.';
-        isValid = false;
-      } else if (isNaN(this.repeatField)) {
-        this.repeatError = 'Repeat must be a number.';
-        isValid = false;
-      }
+      if (this.exerciseType === 'kraftuebung') {
+        if (!this.repeatField) {
+          this.repeatError = 'Repeat is required.';
+          isValid = false;
+        } else if (isNaN(this.repeatField)) {
+          this.repeatError = 'Repeat must be a number.';
+          isValid = false;
+        }
 
-      if (!this.weightField) {
-        this.weightError = 'Weight is required.';
-        isValid = false;
-      } else if (isNaN(this.weightField)) {
-        this.weightError = 'Weight must be a number.';
-        isValid = false;
+        if (!this.weightField) {
+          this.weightError = 'Weight is required.';
+          isValid = false;
+        } else if (isNaN(this.weightField)) {
+          this.weightError = 'Weight must be a number.';
+          isValid = false;
+        }
+      } else if (this.exerciseType === 'ausdaueruebung') {
+        if (!this.timeField) {
+          this.timeError = 'Time is required.';
+          isValid = false;
+        } else if (isNaN(this.timeField)) {
+          this.timeError = 'Time must be a number.';
+          isValid = false;
+        }
       }
 
       return isValid;
@@ -253,53 +410,51 @@ export default {
       this.nameError = '';
       this.repeatError = '';
       this.weightError = '';
+      this.timeError = '';
     },
-    async toggleStopwatch() {
+    
+    toggleStopwatch() {
       if (this.running) {
-        this.stopStopwatch();
+        clearInterval(this.stopwatchInterval);
+        this.running = false;
       } else {
-        this.startStopwatch();
+        this.startTime = Date.now() - this.stopwatchTime;
+        this.stopwatchInterval = setInterval(() => {
+          this.stopwatchTime = Date.now() - this.startTime;
+        }, 10);
+        this.running = true;
       }
     },
-    startStopwatch() {
-      this.running = true;
-      this.startTime = Date.now();
-      this.stopwatchInterval = setInterval(() => {
-        this.stopwatchTime = this.formatTime();
-      }, 1000);
-    },
-    stopStopwatch() {
-      clearInterval(this.stopwatchInterval);
-      this.stopwatchInterval = null;
-    },
-    resetStopwatch() {
-      this.stopStopwatch();
-      this.stopwatchTime = '00:00:00';
-      this.running = false;
-      this.startTime = 0;
-    },
-    formatTime() {
-      const milliseconds = Date.now() - this.startTime;
-      const seconds = Math.floor((milliseconds / 1000) % 60);
-      const minutes = Math.floor((milliseconds / (1000 * 60)) % 60);
-      const hours = Math.floor((milliseconds / (1000 * 60 * 60)) % 24);
 
-      return (
-        this.padNumber(hours) +
-        ':' +
-        this.padNumber(minutes) +
-        ':' +
-        this.padNumber(seconds)
-      );
+    resetStopwatch() {
+      this.stopwatchTime = 0;
+      this.startTime = Date.now();
+      clearInterval(this.stopwatchInterval);
+      this.running = false;
     },
-    padNumber(number) {
-      return number.toString().padStart(2, '0');
-    }
+
+    formatTime(time) {
+      const hours = Math.floor(time / 3600000)
+        .toString()
+        .padStart(2, '0');
+      const minutes = Math.floor((time / 60000) % 60)
+        .toString()
+        .padStart(2, '0');
+      const seconds = Math.floor((time / 1000) % 60)
+        .toString()
+        .padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    },
   },
   mounted() {
+    this.resetStopwatch();
+  },
+  created() {
     this.loadKraftuebungen();
-  }
+    this.loadAusdaueruebungen();
+  },
 };
+
 </script>
 
 <style scoped></style>
