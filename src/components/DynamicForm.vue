@@ -2,27 +2,27 @@
   <div class="centered-container">
     <h1 class="title">Fitnesstracker</h1>
     <div class="form-container">
-      <label for="exercise-type">Übung:</label>
+      <label for="exercise-type">Auswählen:</label>
       <select id="exercise-type" v-model="exerciseType" @change="clearFormFields">
-        <option value="kraftuebung">Kraftuebung</option>
-        <option value="ausdaueruebung">Ausdaueruebung</option>
+        <option value="kraftuebung">Kraftübung</option>
+        <option value="ausdaueruebung">Ausdauerübung</option>
       </select>
       <label for="name">Name:</label>
       <input type="text" id="name" v-model="nameField" />
-      <span class="error-message">{{ nameError }}</span>
+      <span class="validation-message">{{ nameError }}</span>
       <label v-if="exerciseType === 'kraftuebung'" for="repeat">Repeat:</label>
       <input v-if="exerciseType === 'kraftuebung'" type="text" id="repeat" v-model="repeatField" />
-      <span  v-if="exerciseType === 'kraftuebung'" class="error-message">{{ repeatError }}</span>
+      <span  v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ repeatError }}</span>
       <label v-if="exerciseType === 'kraftuebung'" for="weight">Weight:</label>
       <input v-if="exerciseType === 'kraftuebung'" type="text" id="weight" v-model="weightField" />
-      <span  v-if="exerciseType === 'kraftuebung'" class="error-message">{{ weightError }}</span>
+      <span  v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ weightError }}</span>
       <label v-if="exerciseType === 'ausdaueruebung'" for="time">Time:</label>
       <input v-if="exerciseType === 'ausdaueruebung'" type="text" id="time" v-model="timeField" />
-      <span  v-if="exerciseType === 'ausdaueruebung'" class="error-message">{{ timeError }}</span>
-      <button @click="save">Save</button>
+      <span  v-if="exerciseType === 'ausdaueruebung'" class="validation-message">{{ timeError }}</span>
+      <button class="save-button" @click="save">Save</button>
     </div>
     <div>
-      <h2>Kraftuebungen:</h2>
+      <h2>Kraftübungen:</h2>
       <table>
         <thead>
           <tr>
@@ -47,7 +47,7 @@
       </table>
     </div>
     <div>
-      <h2>Ausdaueruebungen:</h2>
+      <h2>Ausdauerübungen:</h2>
       <table>
         <thead>
           <tr>
@@ -311,52 +311,55 @@ save() {
       this.timeField = ausdaueruebung.time;
     },
     confirmKraftuebung(kraftuebung) {
-      const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
-      const data = {
-        name: kraftuebung.name,
-        repeat: kraftuebung.repeat,
-        weight: kraftuebung.weight,
-        confirmed: true,
-      };
-      const requestOptions = {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      };
-      fetch(endpoint, requestOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Success:', data);
-          this.bestaetigteKraftuebungen.push(data); // Hinzufügen zur Liste der bestätigten Kraftübungen
-          this.loadKraftuebungen(); // Aktualisieren der Liste der Kraftübungen
-        })
-        .catch((error) => console.log('error', error));
+  const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
+  const data = {
+    name: kraftuebung.name,
+    repeat: kraftuebung.repeat,
+    weight: kraftuebung.weight,
+    confirmed: true,
+  };
+  const requestOptions = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
     },
-    confirmAusdaueruebung(ausdaueruebung) {
-      const endpoint = `http://localhost:8080/ausdaueruebungen/${ausdaueruebung.id}`;
-      const data = {
-        name: ausdaueruebung.name,
-        time: ausdaueruebung.time,
-        confirmed: true,
-      };
-      const requestOptions = {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      };
-      fetch(endpoint, requestOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Success:', data);
-          this.bestaetigteAusdaueruebungen.push(data); // Hinzufügen zur Liste der bestätigten Ausdauerübungen
-          this.loadAusdaueruebungen(); // Aktualisieren der Liste der Ausdauerübungen
-        })
-        .catch((error) => console.log('error', error));
+    body: JSON.stringify(data),
+  };
+  fetch(endpoint, requestOptions)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+      // Update the local data with confirmed set to true
+      kraftuebung.confirmed = true;
+      this.loadKraftuebungen(); // Aktualisieren der Liste der Kraftübungen
+    })
+    .catch((error) => console.log('error', error));
+},
+
+confirmAusdaueruebung(ausdaueruebung) {
+  const endpoint = `http://localhost:8080/ausdaueruebungen/${ausdaueruebung.id}`;
+  const data = {
+    name: ausdaueruebung.name,
+    time: ausdaueruebung.time,
+    confirmed: true,
+  };
+  const requestOptions = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify(data),
+  };
+  fetch(endpoint, requestOptions)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+      // Update the local data with confirmed set to true
+      ausdaueruebung.confirmed = true;
+      this.loadAusdaueruebungen(); // Aktualisieren der Liste der Ausdauerübungen
+    })
+    .catch((error) => console.log('error', error));
+},
     clearFormFields() {
       //Die erste Methode um Fehler nicht auf Kraftuebungen zu übertragen und andersrum
       this.clearValidationErrors()

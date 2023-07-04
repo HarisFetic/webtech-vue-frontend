@@ -18,10 +18,10 @@ export default {
     return {
       exercises: [
         { id: 1, name: 'Laufen', youtubeLink: 'https://www.youtube.com/watch?v=_kGESn8ArrU', imageUrl: 'https://traum-deutung.de/wp-content/uploads/2015/02/traumdeutung-rennen.jpg' },
-        { id: 2, name: 'Radfahren', youtubeLink: 'https://www.youtube.com/watch?v=2qOOGrcxuTE', imageUrl: 'https://www.80-20.fit/fileadmin/_processed_/f/0/csm_bankdruecken-langhantel-uebung_8bbe9fd03d.png' },
-        { id: 3, name: 'Schwimmen', youtubeLink: 'https://www.youtube.com/watch?v=tu2N9LgzmmI', imageUrl: 'https://www.gewichtsweste.org/wp-content/uploads/2017/01/Klimmzuege.jpg' },
-        { id: 4, name: 'Seilspringen', youtubeLink: 'https://www.youtube.com/watch?v=uOSLQ_7E17M', imageUrl: 'https://fitsportclub.files.wordpress.com/2015/08/liegestc3bctz.jpg' },
-        { id: 5, name: 'HIIT-Training', youtubeLink: 'https://www.youtube.com/watch?v=RzDwYJWVOmY', imageUrl: 'https://gymbox.de/wp-content/uploads/smashbell-training-back-legs-deadlift-ex-web2.jpg' }
+        { id: 2, name: 'Radfahren', youtubeLink: 'https://www.youtube.com/watch?v=UOg1hHmGIQQ', imageUrl: 'https://img.welt.de/img/sport/fitness/mobile146461657/9882504107-ci102l-w1024/Caucasian-woman-riding-bicycle-near-beac.jpg' },
+        { id: 3, name: 'Schwimmen', youtubeLink: 'https://www.youtube.com/watch?v=pFN2n7CRqhw', imageUrl: 'https://media.tag24.de/951x634/6/7/67rgvyv45zxnl54ge7nzgl2j3sshatt8.jpg' },
+        { id: 4, name: 'Seilspringen', youtubeLink: 'https://www.youtube.com/watch?v=adveRqlOByc', imageUrl: 'https://www.fitforfun.de/files/images/202005/1/abnehmen-durch-seilspringen,425256_1x1_xl.jpg' },
+        { id: 5, name: 'HIIT-Training', youtubeLink: 'https://www.youtube.com/watch?v=5O1TTduK6mw', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWU9n91uqaxHdNMYeLdSyMpY5YxY7EbXedvA&usqp=CAU' }
       ]
     };
   }

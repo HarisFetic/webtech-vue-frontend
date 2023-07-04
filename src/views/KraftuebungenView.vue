@@ -20,13 +20,8 @@
 </template>
 
 <script>
-import DynamicForm from '@/components/DynamicForm.vue' // Pfade können je nach Dateistruktur variieren
 
 export default {
-  name: 'KraftuebungenView',
-  components: {
-    DynamicForm
-  },
   data() {
     return {
       exercises: [
@@ -39,6 +34,7 @@ export default {
     };
   }
 }
+
 </script>
 
 <style scoped>
@@ -53,7 +49,8 @@ export default {
 
 .exercise-list-wrapper {
   flex: 1;
-  max-height: calc(100vh - 100px); /* Ändere die maximale Höhe entsprechend deiner Anforderungen */
+  max-height: calc(100vh - 100px);
+  /* Ändere die maximale Höhe entsprechend deiner Anforderungen */
   overflow-y: auto;
 }
 
@@ -61,7 +58,8 @@ export default {
   position: sticky;
   top: 0;
   align-self: flex-start;
-  margin-left: 20px; /* Passe den Abstand zwischen den Übungen und dem Formular nach Bedarf an */
+  margin-left: 20px;
+  /* Passe den Abstand zwischen den Übungen und dem Formular nach Bedarf an */
 }
 
 .exercise-list {
