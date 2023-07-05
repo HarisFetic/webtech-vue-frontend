@@ -22,7 +22,7 @@
       <button class="save-button" @click="save">Save</button>
     </div>
     <div>
-      <h2>Kraftübungen:</h2>
+      <h2>Kraftübungen</h2>
       <table>
         <thead>
           <tr>
@@ -47,7 +47,7 @@
       </table>
     </div>
     <div>
-      <h2>Ausdauerübungen:</h2>
+      <h2>Ausdauerübungen</h2>
       <table>
         <thead>
           <tr>
