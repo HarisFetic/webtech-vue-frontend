@@ -40,7 +40,7 @@
             <td>
               <button @click="editKraftuebung(kraftuebung)">Edit</button>
               <button @click="deleteKraftuebung(kraftuebung.id)">Delete</button>
-              <button v-if="!kraftuebung.confirmed" @click="confirmKraftuebung(kraftuebung)">Confirm</button>
+              <button v-if="!kraftuebung.confirm" @click="confirmKraftuebung(kraftuebung)">Confirm</button>
             </td>
           </tr>
         </tbody>
@@ -63,7 +63,7 @@
             <td>
               <button @click="editAusdaueruebung(ausdaueruebung)">Edit</button>
               <button @click="deleteAusdaueruebung(ausdaueruebung.id)">Delete</button>
-              <button v-if="!ausdaueruebung.confirmed" @click="confirmAusdaueruebung(ausdaueruebung)">Confirm</button>
+              <button v-if="!ausdaueruebung.confirm" @click="confirmAusdaueruebung(ausdaueruebung)">Confirm</button>
             </td>
           </tr>
         </tbody>
@@ -207,7 +207,7 @@ save() {
         name: this.nameField,
         repeat: this.repeatField,
         weight: this.weightField,
-        confirmed: false,
+        confirm: false,
       };
       const requestOptions = {
         method: 'POST',
@@ -230,7 +230,7 @@ save() {
       const data = {
         name: this.nameField,
         time: this.timeField,
-        confirmed: false,
+        confirm: false,
       };
       const requestOptions = {
         method: 'POST',
@@ -255,7 +255,7 @@ save() {
         name: this.nameField,
         repeat: this.repeatField,
         weight: this.weightField,
-        confirmed: this.editingKraftuebung.confirmed,
+        confirm: this.editingKraftuebung.confirm,
       };
       const requestOptions = {
         method: 'PUT',
@@ -280,7 +280,7 @@ save() {
       const data = {
         name: this.nameField,
         time: this.timeField,
-        confirmed: this.editingAusdaueruebung.confirmed,
+        confirm: this.editingAusdaueruebung.confirm,
       };
       const requestOptions = {
         method: 'PUT',
@@ -316,7 +316,7 @@ save() {
     name: kraftuebung.name,
     repeat: kraftuebung.repeat,
     weight: kraftuebung.weight,
-    confirmed: true,
+    confirm: true, // Set confirm to true
   };
   const requestOptions = {
     method: 'PUT',
@@ -329,9 +329,9 @@ save() {
     .then((response) => response.json())
     .then((data) => {
       console.log('Success:', data);
-      // Update the local data with confirmed set to true
-      kraftuebung.confirmed = true;
-      this.loadKraftuebungen(); // Aktualisieren der Liste der Kraftübungen
+      // Update the local data with confirm set to true
+      kraftuebung.confirm = true;
+      this.loadKraftuebungen(); // Update the list of kraftuebungen
     })
     .catch((error) => console.log('error', error));
 },
@@ -341,7 +341,7 @@ confirmAusdaueruebung(ausdaueruebung) {
   const data = {
     name: ausdaueruebung.name,
     time: ausdaueruebung.time,
-    confirmed: true,
+    confirm: true, // Set confirm to true
   };
   const requestOptions = {
     method: 'PUT',
@@ -354,9 +354,9 @@ confirmAusdaueruebung(ausdaueruebung) {
     .then((response) => response.json())
     .then((data) => {
       console.log('Success:', data);
-      // Update the local data with confirmed set to true
-      ausdaueruebung.confirmed = true;
-      this.loadAusdaueruebungen(); // Aktualisieren der Liste der Ausdauerübungen
+      // Update the local data with confirm set to true
+      ausdaueruebung.confirm = true;
+      this.loadAusdaueruebungen(); // Update the list of ausdaueruebungen
     })
     .catch((error) => console.log('error', error));
 },
