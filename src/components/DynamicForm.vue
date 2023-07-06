@@ -12,13 +12,13 @@
       <span class="validation-message">{{ nameError }}</span>
       <label v-if="exerciseType === 'kraftuebung'" for="repeat">Repeat:</label>
       <input v-if="exerciseType === 'kraftuebung'" type="text" id="repeat" v-model="repeatField" />
-      <span  v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ repeatError }}</span>
+      <span v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ repeatError }}</span>
       <label v-if="exerciseType === 'kraftuebung'" for="weight">Weight:</label>
       <input v-if="exerciseType === 'kraftuebung'" type="text" id="weight" v-model="weightField" />
-      <span  v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ weightError }}</span>
+      <span v-if="exerciseType === 'kraftuebung'" class="validation-message">{{ weightError }}</span>
       <label v-if="exerciseType === 'ausdaueruebung'" for="time">Time:</label>
       <input v-if="exerciseType === 'ausdaueruebung'" type="text" id="time" v-model="timeField" />
-      <span  v-if="exerciseType === 'ausdaueruebung'" class="validation-message">{{ timeError }}</span>
+      <span v-if="exerciseType === 'ausdaueruebung'" class="validation-message">{{ timeError }}</span>
       <button class="save-button" @click="save">Save</button>
     </div>
     <div>
@@ -70,7 +70,7 @@
       </table>
     </div>
     <div>
-      <h2>Stopwatch:</h2>
+      <h2>Stopwatch</h2>
       <div class="stopwatch">
         <div class="stopwatch-time">{{ formatTime(stopwatchTime) }}</div>
         <button @click="toggleStopwatch">{{ running ? 'Stop' : 'Start' }}</button>
@@ -118,7 +118,7 @@ export default {
         .then((response) => response.json())
         .then((result) => {
           console.log(result);
-          this.kraftuebungen = result;
+          this.kraftuebungen = result.filter((exercise) => !exercise.confirm);
         })
         .catch((error) => console.log('error', error));
     },
@@ -132,7 +132,7 @@ export default {
         .then((response) => response.json())
         .then((result) => {
           console.log(result);
-          this.ausdaueruebungen = result;
+          this.ausdaueruebungen = result.filter((exercise) => !exercise.confirm);
         })
         .catch((error) => console.log('error', error));
     },
@@ -172,35 +172,35 @@ export default {
     },
     saveAusdaueruebung() {
 
-  this.clearValidationErrors();
+      this.clearValidationErrors();
 
-  if (this.validateForm()) {
-    if (this.editingAusdaueruebung) {
-      this.updateAusdaueruebung();
-    } else {
-      this.createAusdaueruebung();
-    }
-  }
-},
-save() {
-  this.clearValidationErrors();
+      if (this.validateForm()) {
+        if (this.editingAusdaueruebung) {
+          this.updateAusdaueruebung();
+        } else {
+          this.createAusdaueruebung();
+        }
+      }
+    },
+    save() {
+      this.clearValidationErrors();
 
-  if (this.validateForm()) {
-    if (this.exerciseType === 'kraftuebung') {
-      if (this.editingKraftuebung) {
-        this.updateKraftuebung();
-      } else {
-        this.createKraftuebung();
+      if (this.validateForm()) {
+        if (this.exerciseType === 'kraftuebung') {
+          if (this.editingKraftuebung) {
+            this.updateKraftuebung();
+          } else {
+            this.createKraftuebung();
+          }
+        } else if (this.exerciseType === 'ausdaueruebung') {
+          if (this.editingAusdaueruebung) {
+            this.updateAusdaueruebung();
+          } else {
+            this.createAusdaueruebung();
+          }
+        }
       }
-    } else if (this.exerciseType === 'ausdaueruebung') {
-      if (this.editingAusdaueruebung) {
-        this.updateAusdaueruebung();
-      } else {
-        this.createAusdaueruebung();
-      }
-    }
-  }
-},
+    },
     createKraftuebung() {
       const endpoint = 'http://localhost:8080/kraftuebungen';
       const data = {
@@ -311,55 +311,57 @@ save() {
       this.timeField = ausdaueruebung.time;
     },
     confirmKraftuebung(kraftuebung) {
-  const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
-  const data = {
-    name: kraftuebung.name,
-    repeat: kraftuebung.repeat,
-    weight: kraftuebung.weight,
-    confirm: true, // Set confirm to true
-  };
-  const requestOptions = {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  };
-  fetch(endpoint, requestOptions)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success:', data);
-      // Update the local data with confirm set to true
       kraftuebung.confirm = true;
-      this.loadKraftuebungen(); // Update the list of kraftuebungen
-    })
-    .catch((error) => console.log('error', error));
-},
-
-confirmAusdaueruebung(ausdaueruebung) {
-  const endpoint = `http://localhost:8080/ausdaueruebungen/${ausdaueruebung.id}`;
-  const data = {
-    name: ausdaueruebung.name,
-    time: ausdaueruebung.time,
-    confirm: true, // Set confirm to true
-  };
-  const requestOptions = {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
+      const endpoint = `http://localhost:8080/kraftuebungen/${kraftuebung.id}`;
+      const data = {
+        name: kraftuebung.name,
+        repeat: kraftuebung.repeat,
+        weight: kraftuebung.weight,
+        confirm: true, // Set confirm to true
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          // Update the local data with confirm set to true
+          kraftuebung.confirm = true;
+          this.loadKraftuebungen(); // Update the list of kraftuebungen
+        })
+        .catch((error) => console.log('error', error));
     },
-    body: JSON.stringify(data),
-  };
-  fetch(endpoint, requestOptions)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success:', data);
-      // Update the local data with confirm set to true
+
+    confirmAusdaueruebung(ausdaueruebung) {
       ausdaueruebung.confirm = true;
-      this.loadAusdaueruebungen(); // Update the list of ausdaueruebungen
-    })
-    .catch((error) => console.log('error', error));
-},
+      const endpoint = `http://localhost:8080/ausdaueruebungen/${ausdaueruebung.id}`;
+      const data = {
+        name: ausdaueruebung.name,
+        time: ausdaueruebung.time,
+        confirm: true, // Set confirm to true
+      };
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      };
+      fetch(endpoint, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          // Update the local data with confirm set to true
+          ausdaueruebung.confirm = true;
+          this.loadAusdaueruebungen(); // Update the list of ausdaueruebungen
+        })
+        .catch((error) => console.log('error', error));
+    },
     clearFormFields() {
       //Die erste Methode um Fehler nicht auf Kraftuebungen zu übertragen und andersrum
       this.clearValidationErrors()
@@ -415,7 +417,7 @@ confirmAusdaueruebung(ausdaueruebung) {
       this.weightError = '';
       this.timeError = '';
     },
-    
+
     toggleStopwatch() {
       if (this.running) {
         clearInterval(this.stopwatchInterval);

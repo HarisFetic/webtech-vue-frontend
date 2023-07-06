@@ -1,9 +1,9 @@
 <template>
   <div class="centered-container">
-    <h1 class="title">Fitnesstracker</h1>
+    <h1 class="title"></h1>
     <div v-if="kraftuebungen.length || ausdaueruebungen.length">
       <div v-if="kraftuebungen.length">
-        <h2>Kraftübungen</h2>
+        <h2>Alle bereits gemachten Kraftübungen</h2>
         <table>
           <thead>
             <tr>
@@ -22,7 +22,7 @@
         </table>
       </div>
       <div v-if="ausdaueruebungen.length">
-        <h2>Ausdauerübungen</h2>
+        <h2>Alle bereits gemachten Ausdauerübungen</h2>
         <table>
           <thead>
             <tr>
